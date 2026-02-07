@@ -16,7 +16,10 @@ object Project : Project({
         name = "microcks-custom-github"
         url = "https://github.com/sergeimeshe2-spec/microcks-custom.git"
         branch = "refs/heads/main"
-        branchSpec = "+:refs/heads/*"
+        branchSpec = """
+            +:refs/heads/*
+            +:refs/pull/(*)/head
+        """.trimIndent()
         authMethod = password {
             userName = "sergeimeshe2-spec"
             password = "credentialsJSON:GITHUB_TOKEN"
@@ -32,13 +35,14 @@ object Project : Project({
         description = "Build Microcks with Maven"
 
         vcs {
-            root(githubVcs)
+            root(githubVcs, "+:.")
         }
 
         steps {
             script {
                 name = "Maven Build"
                 scriptContent = """
+                    echo "Building from branch: %branch%"
                     mvn clean install -DskipTests -DskipITs
                 """.trimIndent()
             }
@@ -46,11 +50,13 @@ object Project : Project({
 
         params {
             param("env.JAVA_HOME", "%env.JDK_21%")
+            // Branch selection parameter
+            param("branch", "refs/heads/main")
         }
 
         triggers {
             vcs {
-                branchFilter = "+:main"
+                branchFilter = "+:*"
             }
         }
 
@@ -73,7 +79,7 @@ object Project : Project({
         type = BuildTypeSettings.Type.DEPLOYMENT
 
         vcs {
-            root(githubVcs)
+            root(githubVcs, "+:.")
         }
 
         dependencies {
@@ -81,7 +87,13 @@ object Project : Project({
                 artifacts {
                     artifactRules = "artifacts/** => webapp/target/"
                 }
+                // Depend on same branch
+                onDependencyFailure = FailureAction.CANCEL
             }
+        }
+
+        params {
+            param("branch", "%dep.MicrocksCustom_Build.branch%")
         }
 
         steps {
@@ -119,7 +131,7 @@ object Project : Project({
             finishBuildTrigger {
                 buildType = build
                 successfulOnly = true
-                branchFilter = "+:main"
+                branchFilter = "+:*"
             }
         }
     }
@@ -133,13 +145,17 @@ object Project : Project({
         type = BuildTypeSettings.Type.DEPLOYMENT
 
         vcs {
-            root(githubVcs)
+            root(githubVcs, "+:.")
         }
 
         dependencies {
             dependency(docker) {
                 snapshotOnDependencyFailure = false
             }
+        }
+
+        params {
+            param("branch", "%dep.MicrocksCustom_Docker.branch%")
         }
 
         steps {
