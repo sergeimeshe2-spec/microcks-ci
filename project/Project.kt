@@ -53,9 +53,10 @@ object Project : Project({
                     echo "Building from branch: %branch%"
                     echo "Clean build: %env.CLEAN_BUILD%"
                     if [ "%env.CLEAN_BUILD%" = "true" ]; then
-                        mvn clean install -DskipTests -DskipITs
+                        mvn clean package -DskipTests -DskipITs
                     else
-                        mvn install -DskipTests -DskipITs
+                        # Fast incremental build - skip unnecessary checks
+                        mvn package -o -DskipTests -DskipITs -Dmaven.test.skip=true
                     fi
                 """.trimIndent()
             }
