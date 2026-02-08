@@ -1,0 +1,206 @@
+asyncapi: 2.6.0
+info:
+  title: User Events
+  description: События пользователей в Kafka
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  production:
+    url: kafka.production:9092
+    protocol: kafka
+    description: Production Kafka cluster
+  development:
+    url: kafka.development:9092
+    protocol: kafka
+    description: Development Kafka cluster
+
+channels:
+  user/created:
+    publish:
+      summary: Событие создания пользователя
+      description: Публикуется когда создан новый пользователь
+      operationId: publishUserCreated
+      message:
+        name: UserCreated
+        title: User Created Event
+        summary: Событие, когда пользователь создан
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - userId
+            - name
+            - email
+            - timestamp
+          properties:
+            userId:
+              type: string
+              description: Уникальный идентификатор пользователя
+              example: "123"
+            name:
+              type: string
+              description: Имя пользователя
+              minLength: 2
+              maxLength: 100
+              example: "John Doe"
+            email:
+              type: string
+              format: email
+              description: Email пользователя
+              example: "john.doe@example.com"
+            phone:
+              type: string
+              description: Телефон пользователя
+              pattern: '^\+?[0-9]{10,15}$'
+              example: "+7-999-123-4567"
+            createdAt:
+              type: string
+              format: date-time
+              description: Время создания пользователя
+              example: "2024-01-01T00:00:00Z"
+            timestamp:
+              type: string
+              format: date-time
+              description: Время создания события
+              example: "2024-01-01T00:00:00Z"
+        examples:
+          - name: Пример события создания
+            payload:
+              userId: "123"
+              name: "John Doe"
+              email: "john.doe@example.com"
+              phone: "+7-999-123-4567"
+              createdAt: "2024-01-01T00:00:00Z"
+              timestamp: "2024-01-01T00:00:00Z"
+
+  user/updated:
+    publish:
+      summary: Событие обновления пользователя
+      description: Публикуется когда пользователь обновлён
+      operationId: publishUserUpdated
+      message:
+        name: UserUpdated
+        title: User Updated Event
+        summary: Событие, когда пользователь обновлён
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - userId
+            - timestamp
+          properties:
+            userId:
+              type: string
+              description: Уникальный идентификатор пользователя
+              example: "123"
+            name:
+              type: string
+              description: Имя пользователя
+              minLength: 2
+              maxLength: 100
+              example: "John Smith"
+            email:
+              type: string
+              format: email
+              description: Email пользователя
+              example: "john.smith@example.com"
+            phone:
+              type: string
+              description: Телефон пользователя
+              pattern: '^\+?[0-9]{10,15}$'
+              example: "+7-999-123-4567"
+            updatedAt:
+              type: string
+              format: date-time
+              description: Время обновления пользователя
+              example: "2024-01-01T12:00:00Z"
+            timestamp:
+              type: string
+              format: date-time
+              description: Время создания события
+              example: "2024-01-01T12:00:00Z"
+        examples:
+          - name: Пример события обновления
+            payload:
+              userId: "123"
+              name: "John Smith"
+              email: "john.smith@example.com"
+              phone: "+7-999-123-4567"
+              updatedAt: "2024-01-01T12:00:00Z"
+              timestamp: "2024-01-01T12:00:00Z"
+
+  user/deleted:
+    publish:
+      summary: Событие удаления пользователя
+      description: Публикуется когда пользователь удалён
+      operationId: publishUserDeleted
+      message:
+        name: UserDeleted
+        title: User Deleted Event
+        summary: Событие, когда пользователь удалён
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - userId
+            - timestamp
+          properties:
+            userId:
+              type: string
+              description: Уникальный идентификатор пользователя
+              example: "123"
+            timestamp:
+              type: string
+              format: date-time
+              description: Время создания события
+              example: "2024-01-01T15:00:00Z"
+        examples:
+          - name: Пример события удаления
+            payload:
+              userId: "123"
+              timestamp: "2024-01-01T15:00:00Z"
+
+  user/profile-updated:
+    publish:
+      summary: Событие обновления профиля
+      description: Публикуется когда профиль пользователя обновлён
+      operationId: publishUserProfileUpdated
+      message:
+        name: UserProfileUpdated
+        title: User Profile Updated Event
+        summary: Событие, когда профиль пользователя обновлён
+        contentType: application/json
+        payload:
+          type: object
+          required:
+            - userId
+            - timestamp
+          properties:
+            userId:
+              type: string
+              description: Уникальный идентификатор пользователя
+              example: "123"
+            avatar:
+              type: string
+              description: URL аватара пользователя
+              example: "https://example.com/avatars/123.jpg"
+            bio:
+              type: string
+              description: Биография пользователя
+              maxLength: 500
+              example: "Software developer"
+            timestamp:
+              type: string
+              format: date-time
+              description: Время создания события
+              example: "2024-01-01T14:00:00Z"
+        examples:
+          - name: Пример события обновления профиля
+            payload:
+              userId: "123"
+              avatar: "https://example.com/avatars/123.jpg"
+              bio: "Software developer"
+              timestamp: "2024-01-01T14:00:00Z"

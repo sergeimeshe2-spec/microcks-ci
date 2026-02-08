@@ -1,0 +1,294 @@
+openapi: 3.0.3
+info:
+  title: User Service API
+  description: API для управления пользователями
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+servers:
+  - url: http://localhost:8081/api/v1
+    description: Development server
+  - url: https://api.example.com/v1
+    description: Production server
+
+paths:
+  /users:
+    get:
+      summary: Получить всех пользователей
+      description: Возвращает список всех пользователей с пагинацией
+      operationId: getAllUsers
+      tags:
+        - Users
+      parameters:
+        - name: limit
+          in: query
+          description: Количество пользователей для возврата
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: offset
+          in: query
+          description: Количество пользователей для пропуска
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 100
+                      limit:
+                        type: integer
+                        example: 10
+                      offset:
+                        type: integer
+                        example: 0
+        '400':
+          description: Неверные параметры запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Создать пользователя
+      description: Создаёт нового пользователя
+      operationId: createUser
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+            examples:
+              normal:
+                summary: Обычный пользователь
+                value:
+                  name: John Doe
+                  email: john.doe@example.com
+              withPhone:
+                summary: Пользователь с телефоном
+                value:
+                  name: Jane Smith
+                  email: jane.smith@example.com
+                  phone: "+7-999-123-4567"
+      responses:
+        '201':
+          description: Пользователь создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Неверные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{userId}:
+    get:
+      summary: Получить пользователя по ID
+      description: Возвращает пользователя по его уникальному идентификатору
+      operationId: getUserById
+      tags:
+        - Users
+      parameters:
+        - name: userId
+          in: path
+          description: ID пользователя
+          required: true
+          schema:
+            type: string
+          example: "123"
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      summary: Обновить пользователя
+      description: Обновляет данные пользователя
+      operationId: updateUser
+      tags:
+        - Users
+      parameters:
+        - name: userId
+          in: path
+          description: ID пользователя
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: Пользователь обновлён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Удалить пользователя
+      description: Удаляет пользователя
+      operationId: deleteUser
+      tags:
+        - Users
+      parameters:
+        - name: userId
+          in: path
+          description: ID пользователя
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Пользователь удалён
+        '404':
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - name
+        - email
+      properties:
+        id:
+          type: string
+          description: Уникальный идентификатор пользователя
+          example: "123"
+        name:
+          type: string
+          description: Имя пользователя
+          minLength: 2
+          maxLength: 100
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+          example: "john.doe@example.com"
+        phone:
+          type: string
+          description: Телефон пользователя
+          pattern: '^\+?[0-9]{10,15}$'
+          example: "+7-999-123-4567"
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата создания пользователя
+          example: "2024-01-01T00:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Дата последнего обновления
+          example: "2024-01-01T00:00:00Z"
+
+    UserCreate:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        phone:
+          type: string
+          pattern: '^\+?[0-9]{10,15}$'
+          example: "+7-999-123-4567"
+
+    UserUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        phone:
+          type: string
+          pattern: '^\+?[0-9]{10,15}$'
+          example: "+7-999-123-4567"
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Код ошибки
+          example: "USER_NOT_FOUND"
+        message:
+          type: string
+          description: Сообщение об ошибке
+          example: "Пользователь с указанным ID не найден"
+        details:
+          type: object
+          description: Дополнительные детали ошибки
