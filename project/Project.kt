@@ -38,20 +38,27 @@ object Project : Project({
             root(githubVcs, "+:.")
         }
 
+        params {
+            param("env.JAVA_HOME", "%env.JDK_21%")
+            // Clean build parameter - set to "true" for full rebuild, "false" for incremental
+            param("env.CLEAN_BUILD", "false")
+            // Branch selection parameter
+            param("branch", "refs/heads/main")
+        }
+
         steps {
             script {
                 name = "Maven Build"
                 scriptContent = """
                     echo "Building from branch: %branch%"
-                    mvn clean install -DskipTests -DskipITs
+                    echo "Clean build: %env.CLEAN_BUILD%"
+                    if [ "%env.CLEAN_BUILD%" = "true" ]; then
+                        mvn clean install -DskipTests -DskipITs
+                    else
+                        mvn install -DskipTests -DskipITs
+                    fi
                 """.trimIndent()
             }
-        }
-
-        params {
-            param("env.JAVA_HOME", "%env.JDK_21%")
-            // Branch selection parameter
-            param("branch", "refs/heads/main")
         }
 
         triggers {
